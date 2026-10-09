@@ -27,11 +27,17 @@ function renderCart(){
 let toastTimer;
 function toast(message){const el=$("#toast");el.textContent=message;el.classList.add("show");clearTimeout(toastTimer);toastTimer=setTimeout(()=>el.classList.remove("show"),2400)}
 function addToCart(id){const p=products.find(p=>p.id===Number(id));if(!p)return;const found=state.cart.find(i=>i.id===p.id);found?found.qty++:state.cart.push({...p,qty:1});renderCart();toast(`${p.name} added to your bag`)}
-function openCart(){cartDrawer.classList.add("open");cartDrawer.setAttribute("aria-hidden","false");overlay.hidden=false;document.body.style.overflow="hidden";$("#close-cart").focus()}
-function closeCart(){cartDrawer.classList.remove("open");cartDrawer.setAttribute("aria-hidden","true");overlay.hidden=true;document.body.style.overflow="";$("#open-cart").focus()}
+function openCart(){cartDrawer.classList.add("open");cartDrawer.inert=false;cartDrawer.setAttribute("aria-hidden","false");overlay.hidden=false;document.body.style.overflow="hidden";$("#close-cart").focus()}
+function closeCart(){cartDrawer.classList.remove("open");cartDrawer.setAttribute("aria-hidden","true");cartDrawer.inert=true;overlay.hidden=true;document.body.style.overflow="";$("#open-cart").focus()}
 grid.addEventListener("click",e=>{const b=e.target.closest("[data-add]");if(b)addToCart(b.dataset.add)});
 document.querySelectorAll("[data-filter]").forEach(b=>b.addEventListener("click",()=>{state.filter=b.dataset.filter;document.querySelectorAll("[data-filter]").forEach(x=>x.classList.toggle("active",x===b));renderProducts()}));
-document.querySelectorAll("[data-filter-link]").forEach(a=>a.addEventListener("click",()=>{state.filter=a.dataset.filterLink;document.querySelectorAll("[data-filter]").forEach(x=>x.classList.toggle("active",x.dataset.filter===state.filter));renderProducts();$("#main-nav")?.classList.remove("open")}));
+document.querySelectorAll("[data-filter-link]").forEach(a=>a.addEventListener("click",()=>{
+ state.filter=a.dataset.filterLink;
+ document.querySelectorAll("[data-filter]").forEach(x=>x.classList.toggle("active",x.dataset.filter===state.filter));
+ renderProducts();
+ $(".main-nav").classList.remove("open");
+ $("#menu-toggle").setAttribute("aria-expanded","false");
+}));
 $("#product-search").addEventListener("input",e=>{state.query=e.target.value.trim();renderProducts()});
 $("#sort-products").addEventListener("change",e=>{state.sort=e.target.value;renderProducts()});
 $("#view-all").addEventListener("click",()=>{state.filter="All";state.query="";$("#product-search").value="";document.querySelectorAll("[data-filter]").forEach(x=>x.classList.toggle("active",x.dataset.filter==="All"));renderProducts()});
@@ -39,8 +45,9 @@ $("#open-cart").addEventListener("click",openCart);$("#close-cart").addEventList
 $("#continue-shopping").addEventListener("click",()=>{closeCart();$("#shop").scrollIntoView({behavior:"smooth"})});
 $("#cart-items").addEventListener("click",e=>{const q=e.target.closest("[data-qty]"),r=e.target.closest("[data-remove]");if(q){const item=state.cart.find(i=>i.id===Number(q.dataset.qty));if(item){item.qty+=Number(q.dataset.delta);if(item.qty<=0)state.cart=state.cart.filter(i=>i.id!==item.id);renderCart()}}if(r){state.cart=state.cart.filter(i=>i.id!==Number(r.dataset.remove));renderCart()}});
 $("#checkout-button").addEventListener("click",()=>toast("Demo checkout only — no payment or order has been placed."));
-$("#newsletter-form").addEventListener("submit",e=>{e.preventDefault();const email=$("#newsletter-email");if(!email.checkValidity()){email.reportValidity();return}$("#newsletter-message").textContent="Thanks for joining! This demo form doesn't store your email.";email.value=""});
+$("#newsletter-form").addEventListener("submit",e=>{e.preventDefault();const email=$("#newsletter-email");if(!email.checkValidity()){email.reportValidity();return}$("#newsletter-message").textContent="Thanks for your interest! This demo does not store email addresses or send discounts.";email.value=""});
 $(".search-toggle").addEventListener("click",()=>{$("#search-box").scrollIntoView({behavior:"smooth",block:"center"});$("#product-search").focus()});
 $("#menu-toggle").addEventListener("click",()=>{const nav=$(".main-nav"),open=nav.classList.toggle("open");$("#menu-toggle").setAttribute("aria-expanded",String(open))});
 document.addEventListener("keydown",e=>{if(e.key==="Escape"&&cartDrawer.classList.contains("open"))closeCart()});
+cartDrawer.inert=true;
 renderProducts();renderCart();
